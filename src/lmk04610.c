@@ -1,6 +1,7 @@
 #include "lmk04610.h"
 #include <stdio.h>
 #include <unistd.h>
+#include "hal.h"
 
 #include "lmk04610_reg_values.h"
 
@@ -16,7 +17,7 @@ int lmk04610_configure()
 	uint16_t vendor_id;
 
 	//-----  Reset Chip -----
-	ret = lmk04610_register_write(LMK04610_REG_CFG_A, 0x80);
+	ret = lmk04610_register_write(LMK04610_REG_CFG_A, 0x81);
 	if(ret != 0)
 		printf("--- Error spi_write_master(LMK04610_REG_CFG_A, 0x80) ---\n");
 	else
@@ -24,7 +25,16 @@ int lmk04610_configure()
 
 	sleep(1);
 
-	data = 0x10;
+	//
+	data = 0x00;
+	ret = lmk04610_register_write(0x0011, data);
+	ret = lmk04610_register_write(0x0085, data);
+	ret = lmk04610_register_write(0x0086, data);
+	data = 0x02;
+	ret = lmk04610_register_write(0x00F6, data);
+
+
+	data = 0x18;
 	ret = lmk04610_register_write(LMK04610_REG_CFG_A, data);
 	if(ret != 0)
 		printf("--- Error spi_write_master(LMK04610_REG_CFG_A, 0x10) ---\n");
@@ -33,7 +43,7 @@ int lmk04610_configure()
 
 	data = 0xFF;
 	//====================================================
-	while (data != 0xFF)
+	while (data != 0x18)
 	{
 
 		data = 0;
@@ -123,6 +133,9 @@ int lmk04610_configure()
 	lmk04610_register_write_tbl(&LMK_INIT_TBL[0], sizeof(LMK_INIT_TBL) / sizeof(LMK_INIT_TBL[0]));
 
 
+	printf("============= Custom set registers ============\n");
+
+
 
 	printf("=============  Start device  ============\n");
 	data = 0x01;
@@ -130,7 +143,18 @@ int lmk04610_configure()
 	if(ret != 0)
 		printf("--- Error spi_write_master(0x0011, 0x01) ---\n");
 
-	sleep(1);
+
+	// ============= Set PLL2 Lock detect  ==================
+	data = 0x30;
+	ret = lmk04610_register_write(0x00AD, data);
+	if(ret != 0)
+		printf("--- Error spi_write_master(0x00AD, 0x30) ---\n");
+
+	delay_us(30000);
+
+	data = 0x00;
+	ret = lmk04610_register_write(0x00AD, data);
+
 
 	return ret;
 
