@@ -20,6 +20,8 @@ int spi_set_bits_per_word(int bits);
 int spi_set_speed(uint32_t speed);
 int spi_xfer_lmk0482x(uint8_t* wbuf, uint8_t* rbuf, int len);
 int delay_us(unsigned int time_us);
+int delay_ms(unsigned int msec);
+
 #ifdef __cplusplus
 }
 #endif
