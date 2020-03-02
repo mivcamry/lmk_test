@@ -15,31 +15,35 @@ int lmk04610_configure()
 	uint16_t prod_id;
 	uint8_t mask_rev;
 	uint16_t vendor_id;
+	int cnt = 0;
 
 	//-----  Reset Chip -----
 	ret = lmk04610_register_write(LMK04610_REG_CFG_A, 0x81);
-	if(ret != 0)
-		printf("--- Error spi_write_master(LMK04610_REG_CFG_A, 0x80) ---\n");
+	if(ret != 0) {
+		printf("--- Error lmk04610_register_write(LMK04610_REG_CFG_A, 0x81) ---\n");
+		return ret;
+	}
 	else
-		printf("--- Chip reset success (NO 3-Wire SPI)---\n");
+		printf("--- Chip reset success ---\n");
 
 	sleep(1);
 
 	//
-	data = 0x00;
-	ret = lmk04610_register_write(0x0011, data);
-	ret = lmk04610_register_write(0x0085, data);
-	ret = lmk04610_register_write(0x0086, data);
-	data = 0x02;
-	ret = lmk04610_register_write(0x00F6, data);
+	ret = lmk04610_register_write(0x0011, 0x00);
+	ret = lmk04610_register_write(0x0085, 0x00);
+	ret = lmk04610_register_write(0x0086, 0x00);
+	ret = lmk04610_register_write(0x00F6, 0x02);
 
 
 	data = 0x18;
 	ret = lmk04610_register_write(LMK04610_REG_CFG_A, data);
-	if(ret != 0)
-		printf("--- Error spi_write_master(LMK04610_REG_CFG_A, 0x10) ---\n");
+	if(ret != 0) {
+		printf("--- Error lmk04610_register_write(LMK04610_REG_CFG_A, 0x18) ---\n");
+		return ret;
+	}
 
 	printf("**************************   ***************************\n");
+	ret = lmk04610_register_write(0x0094, 0x04); // Set SPI
 
 	data = 0xFF;
 	//====================================================
@@ -48,8 +52,10 @@ int lmk04610_configure()
 
 		data = 0;
 		ret = lmk04610_register_read(LMK04610_REG_CFG_A, &data);
-		if(ret != 0)
+		if(ret != 0) {
 			printf("--- Error lmk04610_register_read(LMK04610_REG_CFG_A, &data) ---\n");
+			return ret;
+		}
 		else
 			printf("--- read register LMK04610_REG_CFG_A [0]:%x, ---\n", data);
 
@@ -62,7 +68,7 @@ int lmk04610_configure()
 	//======================================================================
 	if((ret = lmk04610_register_read(LMK04610_REG_CHIP_TYPE, &data)) != 0)
 	{
-		printf("--- Error spi_read_master(LMK0482x_REG_CHIP_TYPE, &data) ---\n");
+		printf("--- Error lmk04610_register_read(LMK0482x_REG_CHIP_TYPE, &data) ---\n");
 		return ret;
 	}
 	else
@@ -73,7 +79,7 @@ int lmk04610_configure()
 
 	if((ret = lmk04610_register_read(LMK04610_REG_PROD_ID_MSB, &data)) != 0)
 	{
-		printf("--- Error spi_read_master(LMK0482x_REG_PROD_ID_MSB, &data) ---\n");
+		printf("--- Error lmk04610_register_read(LMK0482x_REG_PROD_ID_MSB, &data) ---\n");
 		return ret;
 	}
 	else
@@ -84,7 +90,7 @@ int lmk04610_configure()
 
 	if((ret = lmk04610_register_read(LMK04610_REG_PROD_ID_LSB, &data)) != 0)
 	{
-		printf("--- Error spi_read_master(LMK0482x_REG_PROD_ID_LSB, &data) ---\n");
+		printf("--- Error lmk04610_register_read(LMK0482x_REG_PROD_ID_LSB, &data) ---\n");
 		return ret;
 	}
 	else
@@ -94,7 +100,7 @@ int lmk04610_configure()
 
 	if((ret = lmk04610_register_read(LMK04610_REG_CHIP_MASK_REV, &data)) != 0)
 	{
-		printf("--- Error spi_read_master(LMK0482x_REG_CHIP_MASK_REV, &data) ---\n");
+		printf("--- Error lmk04610_register_read(LMK0482x_REG_CHIP_MASK_REV, &data) ---\n");
 		return ret;
 	}
 	else
@@ -104,7 +110,7 @@ int lmk04610_configure()
 
 	if((ret = lmk04610_register_read(LMK04610_REG_VNDR_ID_MSB, &data)) != 0)
 	{
-		printf("--- Error spi_read_master(LMK04610_REG_VNDR_ID_MSB, &data) ---\n");
+		printf("--- Error lmk04610_register_read(LMK04610_REG_VNDR_ID_MSB, &data) ---\n");
 		return ret;
 	}
 
@@ -113,7 +119,7 @@ int lmk04610_configure()
 
 	if((ret = lmk04610_register_read(LMK04610_REG_VNDR_ID_LSB, &data)) != 0)
 	{
-		printf("--- Error spi_read_master(LMK0482x_REG_VNDR_ID_LSB, &data) ---\n");
+		printf("--- Error lmk04610_register_read(LMK0482x_REG_VNDR_ID_LSB, &data) ---\n");
 		return ret;
 	}
 	else
@@ -132,33 +138,77 @@ int lmk04610_configure()
 	printf("=============  Setup lmk registers  ============\n");
 	lmk04610_register_write_tbl(&LMK_INIT_TBL[0], sizeof(LMK_INIT_TBL) / sizeof(LMK_INIT_TBL[0]));
 
+	// STAT0MUX Register. Detect
+	ret = lmk04610_register_write(0x0095, 0x02);
 
-	printf("============= Custom set registers ============\n");
+	// Set Clock Input source
+	ret = lmk04610_register_write(0x002C, 0x44);
 
-
+	// =============   Set PLL2 Lock detect    ==================================
+	// The PLL2_DLD_EN Register supports PLL2 DLD EN Feature
+	ret = lmk04610_register_write(0x00F6, 0x02);
+	// The PLL2_LD_WNDW_SIZE Register sets the PLL2 Window Comparator Setting
+	ret = lmk04610_register_write(0x0085, 0x00);
+	// ThePLL2_LD_WNDW_SIZE_INITIAL Register sets the PLL2 Window Comparator Initial Setting
+	ret = lmk04610_register_write(0x0086, 0x00);
 
 	printf("=============  Start device  ============\n");
-	data = 0x01;
-	ret = lmk04610_register_write(0x0011, data);
+	ret = lmk04610_register_write(0x0011, 0x01);
 	if(ret != 0)
-		printf("--- Error spi_write_master(0x0011, 0x01) ---\n");
+		printf("--- Error lmk04610_register_write(0x0011, 0x01) ---\n");
+
+	//
+	// The PLL2_CTRL Register supports other PLL2 features.
+	// Before using PLL2 DLD signal, set this field to 0x3, wait 20ms, set to 0x0.
+	ret = lmk04610_register_write(0x00AD, 0x30);
+	if(ret != 0) {
+		printf("--- Error lmk04610_register_write(0x00AD, 0x30) ---\n");
+		return 0;
+	}
+
+	delay_ms(20);
+
+	ret = lmk04610_register_write(0x00AD, 0x00);
 
 
-	// ============= Set PLL2 Lock detect  ==================
-	data = 0x30;
-	ret = lmk04610_register_write(0x00AD, data);
-	if(ret != 0)
-		printf("--- Error spi_write_master(0x00AD, 0x30) ---\n");
+	data = 0;
+	cnt = 0;
+	printf("====== Wait for PLL2 Locked...  ====== \r\n");
+	while(!(data & 0x02))
+	{
+		delay_ms(100);
 
-	delay_us(30000);
+		if((ret = lmk04610_register_read(0x0BE, &data)) != 0)
+		{
+			printf("--- Error lmk04610_register_read(0x0BE, &data) ---\n");
+			return ret;
+		}
+		if(!(data & 0x02))
+		{
+			ret = lmk04610_register_write(0x0011, 0x01);
+			if(ret != 0)
+				printf("--- Error lmk04610_register_write(0x0011, 0x01) ---\n");
 
-	data = 0x00;
-	ret = lmk04610_register_write(0x00AD, data);
+			// The PLL2_CTRL Register supports other PLL2 features.
+			// Before using PLL2 DLD signal, set this field to 0x3, wait 20ms, set to 0x0.
+			ret = lmk04610_register_write(0x00AD, 0x30);
+			if(ret != 0)
+			{
+				printf("--- Error lmk04610_register_write(0x00AD, 0x30) ---\n");
+				return 0;
+			}
+			delay_ms(20);
+			ret = lmk04610_register_write(0x00AD, 0x00);
+			cnt++;
+		}
+	}
 
+	printf("***************************************************\r\n");
+	printf("****** Read  STATUS Register: %x  Count: %d  ******\r\n", data, cnt);
+	printf("************** PLL2 Lock Detected *****************\r\n");
+	printf("***************************************************\r\n");
 
 	return ret;
 
 }
-
-
 
