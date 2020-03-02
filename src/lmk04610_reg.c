@@ -18,7 +18,7 @@ int lmk04610_register_write(const uint16_t address, const uint8_t data)
 	wr[0] = (address >> 8) & 0x1F;
 
 	//printf("----------------------- write --------------------------------------------------------------------\n");
-	printf("--- write data to register %x  << [0]:%x, [1]:%x, [2]:%x >> ---\n", address, wr[0], wr[1], wr[2]);
+	//printf("--- write data to register %x  << [0]:%x, [1]:%x, [2]:%x >> ---\n", address, wr[0], wr[1], wr[2]);
 	//printf("--- read data from register %x  << [0]:%x, [1]:%x, [2]:%x >> ---\n", address, rd[0], rd[1], rd[2]);
 
 	return spi_xfer_lmk0482x(wr, rd, IN_OUT_BUFF_SZ);
@@ -39,9 +39,9 @@ int lmk04610_register_read(const uint16_t address, uint8_t *data)
 	if(ret == API_ERROR_OK)
 		*data = rd[2];
 
-	printf("----------------------- read --------------------------------------------------------------------\n");
-	printf("--- write data to register %x  << [0]:%x, [1]:%x, [2]:%x >> ---\n", address, wr[0], wr[1], wr[2]);
-	printf("--- read data from register %x  << [0]:%x, [1]:%x, [2]:%x >> ---\n", address, rd[0], rd[1], rd[2]);
+	//printf("----------------------- read --------------------------------------------------------------------\n");
+	//printf("--- write data to register %x  << [0]:%x, [1]:%x, [2]:%x >> ---\n", address, wr[0], wr[1], wr[2]);
+	//printf("--- read data from register %x  << [0]:%x, [1]:%x, [2]:%x >> ---\n", address, rd[0], rd[1], rd[2]);
 
 	return ret;
 }
